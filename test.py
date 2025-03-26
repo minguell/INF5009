@@ -1,6 +1,7 @@
 import subprocess
 import csv
 import random
+import time  # Import time for high-precision timing
 
 def generate_dimacs(num_vertices, num_edges):
     """Generate a random DIMACS graph as a string."""
@@ -41,7 +42,6 @@ if __name__ == "__main__":
     num_vertices = 100  # Number of vertices in the graph
     num_edges = 500  # Number of edges in the graph
     source = 1  # Source vertex
-    destination = 50  # Destination vertex
 
     # Generate a random DIMACS graph
     dimacs_input = generate_dimacs(num_vertices, num_edges)
@@ -49,14 +49,21 @@ if __name__ == "__main__":
     # Open a CSV file to write the results
     with open("analysis.csv", mode="w", newline="") as csvfile:
         csv_writer = csv.writer(csvfile)
-        csv_writer.writerow(["k", "Result", "Execution Time (s)", "Insert Operations", "DeleteMin Operations", "DecreaseKey Operations"])
+        csv_writer.writerow(["k", "Destination", "Result", "Execution Time (s)", "Insert Operations", "DeleteMin Operations", "DecreaseKey Operations"])
 
-        # Test for k values from 1 to 20
-        for k in range(1, 21):
-            print(f"Running test for k={k}...")
+        # Test for k values from 1 to 30
+        for k in range(1, 31):
+            destination = k  # Set destination to the current value of k
+            print(f"Running test for k={k}, destination={destination}...")
             try:
+                # Measure execution time with high precision
+                start_time = time.perf_counter()
                 output = run_test(k, dimacs_input, source, destination)
-                result, execution_time, insert_ops, deletemin_ops, decreasekey_ops = parse_output(output)
-                csv_writer.writerow([k, result, execution_time, insert_ops, deletemin_ops, decreasekey_ops])
+                end_time = time.perf_counter()
+                execution_time = end_time - start_time
+
+                # Parse the output and write to CSV
+                result, _, insert_ops, deletemin_ops, decreasekey_ops = parse_output(output)
+                csv_writer.writerow([k, destination, result, f"{execution_time:.6f}", insert_ops, deletemin_ops, decreasekey_ops])
             except Exception as e:
-                print(f"Error for k={k}: {e}")
+                print(f"Error for k={k}, destination={destination}: {e}")
