@@ -1,18 +1,11 @@
 import subprocess
 import csv
-import random
-import time  # Import time for high-precision timing
+import time
 
-def generate_dimacs(num_vertices, num_edges):
-    """Generate a random DIMACS graph as a string."""
-    dimacs = []
-    dimacs.append(f"p sp {num_vertices} {num_edges}")
-    for _ in range(num_edges):
-        u = random.randint(1, num_vertices)
-        v = random.randint(1, num_vertices)
-        w = random.randint(1, 100)  # Random weight between 1 and 100
-        dimacs.append(f"a {u} {v} {w}")
-    return "\n".join(dimacs)
+def read_dimacs(file_path):
+    """Read a DIMACS graph from a file."""
+    with open(file_path, "r") as file:
+        return file.read()
 
 def run_test(k, dimacs_input, source, destination):
     """Run dijkstra.py with the given k and DIMACS input."""
@@ -39,20 +32,20 @@ def parse_output(output):
     return result, execution_time, insert_operations, deletemin_operations, decreasekey_operations
 
 if __name__ == "__main__":
-    num_vertices = 100  # Number of vertices in the graph
-    num_edges = 500  # Number of edges in the graph
+    graph_file = "USA-road-d.NY.gr"  # Path to the DIMACS graph file
     source = 1  # Source vertex
+    num_tests = 30  # Number of tests to run
 
-    # Generate a random DIMACS graph
-    dimacs_input = generate_dimacs(num_vertices, num_edges)
+    # Read the DIMACS graph from the file
+    dimacs_input = read_dimacs(graph_file)
 
     # Open a CSV file to write the results
     with open("analysis.csv", mode="w", newline="") as csvfile:
         csv_writer = csv.writer(csvfile)
         csv_writer.writerow(["k", "Destination", "Result", "Execution Time (s)", "Insert Operations", "DeleteMin Operations", "DecreaseKey Operations"])
 
-        # Test for k values from 1 to 30
-        for k in range(1, 31):
+        # Test for k values from 1 to num_tests
+        for k in range(1, num_tests + 1):
             destination = k  # Set destination to the current value of k
             print(f"Running test for k={k}, destination={destination}...")
             try:
