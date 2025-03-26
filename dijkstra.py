@@ -2,20 +2,26 @@ import sys
 import heapq
 from collections import defaultdict
 import math
+import time  # Import time module for execution time measurement
 
 class KAryHeap:
     def __init__(self, k):
         self.k = k
         self.heap = []
         self.position = {}
+        self.insert_count = 0  # Counter for insert operations
+        self.deletemin_count = 0  # Counter for deletemin operations
+        self.decreasekey_count = 0  # Counter for decreasekey operations
     
     def push(self, key, value):
         heapq.heappush(self.heap, (value, key))
         self.position[key] = len(self.heap) - 1
+        self.insert_count += 1  # Increment insert counter
     
     def pop(self):
         value, key = heapq.heappop(self.heap)
         self.position.pop(key, None)
+        self.deletemin_count += 1  # Increment deletemin counter
         return key, value
     
     def decrease_key(self, key, new_value):
@@ -23,6 +29,7 @@ class KAryHeap:
             if k == key:
                 self.heap[i] = (new_value, key)
                 heapq.heapify(self.heap)
+                self.decreasekey_count += 1  # Increment decreasekey counter
                 return
     
     def is_empty(self):
@@ -38,7 +45,7 @@ def dijkstra(graph, source, destination, k):
         u, dist_u = heap.pop()
         
         if u == destination:
-            return dist_u
+            return dist_u, heap  # Return the heap to access operation counts
         
         for v, weight in graph[u]:
             alt = dist_u + weight
@@ -47,7 +54,7 @@ def dijkstra(graph, source, destination, k):
                 heap.push(v, alt)
                 heap.decrease_key(v, alt)
     
-    return "inf"
+    return "inf", heap  # Return the heap to access operation counts
 
 def parse_dimacs():
     graph = defaultdict(list)
@@ -69,6 +76,15 @@ if __name__ == "__main__":
     graph = parse_dimacs()
     source = int(sys.argv[1])
     destination = int(sys.argv[2])
-    k = int(sys.argv[3])  # Recebe o valor de k como argumento
-    result = dijkstra(graph, source, destination, k)
-    print(result)
+    k = int(sys.argv[2])  # Recebe o valor de k como argumento
+    
+    start_time = time.time()  # Start timing
+    result, heap = dijkstra(graph, source, destination, k)
+    end_time = time.time()  # End timing
+    
+    # Print the result and performance metrics
+    print(f"Result: {result}")
+    print(f"Execution Time: {end_time - start_time:.6f} seconds")
+    print(f"Insert Operations: {heap.insert_count}")
+    print(f"DeleteMin Operations: {heap.deletemin_count}")
+    print(f"DecreaseKey Operations: {heap.decreasekey_count}")
